@@ -1,0 +1,512 @@
+import React, { useState, useEffect } from "react";
+import { useFormik, Field, FieldArray, FormikProvider } from "formik";
+import * as Yup from "yup";
+import {
+  Form,
+  Label,
+  Input,
+  Button,
+  Row,
+  Col,
+  FormText
+} from "reactstrap";
+import axios from "axios";
+import Breadcrumb from "components/Common/Breadcrumb2";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import { BASE_URL } from "constants/config";
+import axiosInstance from "pages/Utility/axiosInstance";
+import { useLocation, useNavigate} from "react-router-dom";
+import Select from "react-select"
+import { useTranslation } from "react-i18next";
+import { IoMdClose } from "react-icons/io";
+import { showSuccess } from "helpers/notification_helper";
+import { fileToBase64, generateVariants } from "helpers/common_helper";
+
+const ProductForm = ({ onCreated }) => {
+  const [allImages, setAllImages] = useState([]);  // unified list
+  const [variants, setVariants] = useState([]);
+  const [collections, setCollections] = useState([]);
+  const { search } = useLocation();
+  const query = new URLSearchParams(search)
+  const id = query.get("id");
+  const [productDetails, setProductDetails] = useState([])
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+
+  const fetchProductDetails = async () => {
+    try {
+      const response = await axiosInstance.get(`V1/products/${id}`);
+      setProductDetails(response.data.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    fetchProductDetails()
+  }, [id])
+
+  useEffect(() => {
+    // Fetch collections from backend
+    const fetchCollections = async () => {
+      try {
+        const res = await axiosInstance.get("V1/collections");
+        setCollections(res.data.data || []);
+      } catch (err) {
+        console.error("Failed to fetch collections:", err.response?.data || err.message);
+      }
+    };
+    fetchCollections();
+  }, []);
+
+  useEffect(() => {
+    if (productDetails?.data) {
+      const p = productDetails?.data;
+      setAllImages(
+        p?.images?.map((img) => ({
+          id: img.id,
+          src: img.src,
+          isNew: false,
+        })) || []
+      );
+
+      setVariants(
+        p?.variants?.map((v) => ({
+          option1: v.option1,
+          option2: v.option2,
+          option3: v.option3,
+          price: v.price,
+          inventory_quantity: v.inventory_quantity,
+          sku: v.sku,
+        }))
+      );
+
+      formik.setValues({
+        title: p.title,
+        body_html: p.body_html,
+        vendor: p.vendor,
+        product_type: p.product_type,
+        tags: p.tags,
+        price: p.variants?.[0]?.price || "",
+        options: p.options,
+        images: [],
+        collectionIds: productDetails?.collectionIds,
+        metafields: { vendor_name: "", vendor_id: "" }
+      });
+    }
+  }, [productDetails]);
+
+  const formik = useFormik({
+    initialValues: {
+      title: "",
+      body_html: "",
+      vendor: "",
+      product_type: "",
+      tags: "",
+      price: "",
+      options: [
+        { name: "Color", values: [""] },
+        { name: "Size", values: [""] },
+        { name: "Material", values: [""] },
+      ],
+      images: [],
+      collectionIds: [],
+      metafields: { vendor_name: "", vendor_id: "" },
+    },
+    validationSchema: Yup.object({
+      title: Yup.string().required("Required"),
+      price: Yup.number().required("Product price is required").typeError("Must be a number"),
+    }),
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        // Convert images to base64
+        const newImagesBase64 = await Promise.all(
+          allImages
+            .filter((img) => img.isNew)
+            .map((img) => fileToBase64(img.file))
+        );
+
+        const payload = {
+          product: {
+            title: values.title,
+            body_html: values.body_html,
+            vendor: values.vendor,
+            price: values.price,
+            product_type: values.product_type,
+            tags: values.tags.split(",").map((t) => t.trim()),
+            options: values.options.map((opt) => ({
+              name: opt.name,
+              values: opt.values.filter((v) => v !== ""),
+            })),
+            variants,
+            images: [...newImagesBase64.map((b64) => ({ attachment: b64 })),...allImages?.filter(item=>!item?.isNew)?.map(item=>({id:item?.id,src:item?.src}))],
+          },
+          // imagesToKeep: allImages
+          //   .filter(img => !img.isNew)
+          //   .map(img => Number(img.id)),
+          collectionIds: values.collectionIds, // Add collectionIds to payload
+        };
+
+        if (id) {
+          const res = await axios.put(`http://localhost:3002/api/V1/products/update/${id}`, payload);
+          resetForm();
+          showSuccess("Product updated successfully")
+          navigate('/products')
+          setPreviewImages([]);
+          setVariants([]);
+        } else {
+          const res = await axios.post(`http://localhost:3002/api/V1/products`, payload);
+          onCreated && onCreated(res.data);
+          resetForm();
+          showSuccess("Product added successfully")
+          navigate('/products')
+          setPreviewImages([]);
+          setVariants([]);
+        }
+
+      } catch (err) {
+        console.error("Failed to create product:", err.response?.data || err.message);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  useEffect(() => {
+    const newVariants = generateVariants(formik.values.options, formik.values.price || 0);
+    const mergedVariants = newVariants.map((v) => {
+      const existing = variants.find(
+        (ex) =>
+          ex.option1 === v.option1 &&
+          ex.option2 === v.option2 &&
+          ex.option3 === v.option3
+      );
+      return existing ? { ...v, price: existing.price, inventory_quantity: existing.inventory_quantity } : v;
+    });
+    setVariants(mergedVariants);
+  }, [formik.values.options, formik.values.price]);
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+
+    const newImgs = files.map((file) => ({
+      file,
+      src: URL.createObjectURL(file),
+      isNew: true
+    }));
+
+    setAllImages((prev) => [...prev, ...newImgs]);
+  };
+
+  const handleImageRemove = (index) => {
+    setAllImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const cardStyle = {
+    background: "white",
+    border: "1px solid #dfe3e8",
+    borderRadius: "8px",
+    padding: "20px",
+    marginBottom: "20px",
+  };
+
+  const cardTitle = {
+    fontWeight: "600",
+    fontSize: "1rem",
+    marginBottom: "15px",
+  };
+
+  const labelStyle = { fontWeight: 500 };
+
+  return (
+    <div className="page-content">
+      <div className="d-flex justify-content-between align-items-center mx-3">
+        <Breadcrumb
+          title={id ? "Update product" : "Create product"}
+          breadcrumbItems={[
+            { title: "Dashboard", link: "/dashboard" },
+            { title: id ? "Update Product" : "Create Product", link: "#" },
+          ]}
+        />
+        <Button className="text-white bg-primary" onClick={() => navigate('/products')}>
+          ← {t('Back')}
+        </Button>
+      </div>
+
+      <FormikProvider value={formik}>
+        <Form onSubmit={formik.handleSubmit} className="mx-3">
+
+          {/* ---------- TITLE ---------- */}
+          <div style={cardStyle}>
+            <Label style={labelStyle}>Title*</Label>
+            <Input
+              id="title"
+              name="title"
+              value={formik.values.title}
+              onChange={formik.handleChange}
+              invalid={!!formik.errors.title && formik.touched.title}
+            />
+            {formik.errors.title && (
+              <FormText color="danger">{formik.errors.title}</FormText>
+            )}
+          </div>
+
+          {/* ---------- DESCRIPTION ---------- */}
+          <div style={cardStyle}>
+            <Label style={labelStyle}>Description</Label>
+            <ReactQuill
+              theme="snow"
+              value={formik.values.body_html}
+              onChange={(value) => formik.setFieldValue("body_html", value)}
+              placeholder="Write product description…"
+              style={{ background: "white", borderRadius: "8px" }}
+            />
+          </div>
+
+          {/* ---------- MEDIA ---------- */}
+          <div style={cardStyle}>
+            <Label style={labelStyle}>Media</Label>
+            <Input type="file" multiple accept="image/*" onChange={handleImageChange} />
+
+            <div className="d-flex gap-2 mt-2 flex-wrap">
+              {allImages.map((img, i) => (
+                <div key={i} style={{ position: "relative" }}>
+                  <img
+                    src={img.src}
+                    alt=""
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: "cover",
+                      borderRadius: 6,
+                      border: "1px solid #e5e5e5",
+                    }}
+                  />
+
+                  <Button
+                    color="danger"
+                    size="sm"
+                    onClick={() => handleImageRemove(i)}
+                    style={{
+                      position: "absolute",
+                      top: 4,
+                      right: 4,
+                      padding: "2px 5px",
+                      borderRadius: "50%",
+                    }}
+                  >
+                    <IoMdClose size={12} color="white" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+          </div>
+
+          {/* ---------- PRICING ---------- */}
+          <div style={cardStyle}>
+            <div style={cardTitle}>Pricing</div>
+            <Label style={labelStyle}>Price*</Label>
+            <Input
+              type="number"
+              id="price"
+              name="price"
+              value={formik.values.price}
+              onChange={formik.handleChange}
+              placeholder="Product price"
+            />
+            {formik.errors.price && (
+              <FormText color="danger">{formik.errors.price}</FormText>
+            )}
+          </div>
+
+          {/* ---------- ORGANIZATION ---------- */}
+          <div style={cardStyle}>
+            <div style={cardTitle}>Organization</div>
+
+            <Label style={labelStyle}>Vendor</Label>
+            <Input
+              id="vendor"
+              name="vendor"
+              value={formik.values.vendor}
+              onChange={formik.handleChange}
+            />
+
+            <Label style={labelStyle} className="mt-2">Product Type</Label>
+            <Input
+              id="product_type"
+              name="product_type"
+              value={formik.values.product_type}
+              onChange={formik.handleChange}
+            />
+
+            <Label style={labelStyle} className="mt-2">Tags</Label>
+            <Input
+              id="tags"
+              name="tags"
+              value={formik.values.tags}
+              onChange={formik.handleChange}
+              placeholder="summer, cotton, etc"
+            />
+
+            {/* ---------- COLLECTION DROPDOWN ---------- */}
+            <Label style={labelStyle} className="mt-2">Collections</Label>
+
+            <Select
+              isMulti
+              name="collectionIds"
+              options={collections?.map(item => ({ label: item?.title, value: item?.id }))}
+              className="basic-multi-select"
+              classNamePrefix="select"
+              value={collections?.map(item => ({ label: item?.title, value: String(item?.id) }))?.filter(opt =>
+                formik.values.collectionIds.includes(opt.value)
+              )}
+              onChange={(selected) => {
+                const ids = selected ? selected.map(item => String(item.value)) : [];
+                formik.setFieldValue("collectionIds", ids);
+              }}
+            />
+          </div>
+
+          {/* ---------- OPTIONS ---------- */}
+          <div style={cardStyle}>
+            <div style={cardTitle}>Options</div>
+            <FieldArray name="options">
+              {({ push, remove }) => (
+                <div className="d-flex flex-column gap-3">
+                  {formik.values.options?.map((option, idx) => (
+                    <div
+                      key={idx}
+                      style={{
+                        border: "1px solid #dfe3e8",
+                        padding: "16px",
+                        borderRadius: "10px",
+                        background: "#fafbfc",
+                      }}
+                    >
+                      <Row className="align-items-center mb-3">
+                        <Col md={6}>
+                          <Label style={labelStyle}>Option Name</Label>
+                          <Field
+                            name={`options.${idx}.name`}
+                            as={Input}
+                            placeholder="Option Name"
+                          />
+                        </Col>
+                        <Col md={6} className="text-end">
+                          <Button
+                            color="danger"
+                            size="sm"
+                            type="button"
+                            onClick={() => remove(idx)}
+                          >
+                            Remove Option
+                          </Button>
+                        </Col>
+                      </Row>
+
+                      <Label style={labelStyle}>Values</Label>
+                      <div className="d-flex flex-column gap-2">
+                        {option.values?.map((value, vIdx) => (
+                          <div key={vIdx} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                            <Field
+                              name={`options.${idx}.values.${vIdx}`}
+                              as={Input}
+                              placeholder="Value"
+                            />
+                            <Button
+                              color="danger"
+                              size="sm"
+                              type="button"
+                              onClick={() => {
+                                const updated = [...option.values];
+                                updated.splice(vIdx, 1);
+                                formik.setFieldValue(`options.${idx}.values`, updated);
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          color="secondary"
+                          size="sm"
+                          type="button"
+                          onClick={() =>
+                            formik.setFieldValue(`options.${idx}.values`, [...option.values, ""])
+                          }
+                        >
+                          + Add Value
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    color="primary"
+                    type="button"
+                    onClick={() => push({ name: `Option ${formik.values.options?.length + 1}`, values: [""] })}
+                  >
+                    + Add Option
+                  </Button>
+                </div>
+              )}
+            </FieldArray>
+
+            {/* ---------- VARIANTS ---------- */}
+            {variants?.length > 0 && variants?.some(v => v.option1 || v.option2 || v.option3) && (
+              <div className="mt-4">
+                <div style={cardTitle}>Variants</div>
+                <Row className="fw-bold mb-2" style={{ padding: "10px 0", borderBottom: "1px solid #dfe3e8" }}>
+                  <Col md={4}>Variant</Col>
+                  <Col md={4}>Price</Col>
+                  <Col md={4}>inventory_quantity</Col>
+                </Row>
+                {variants?.map((variant, idx) => (
+                  <Row key={idx} className="align-items-center mb-2" style={{ padding: "8px 0", borderBottom: "1px solid #f0f0f0" }}>
+                    <Col md={4}>
+                      <span style={{ fontSize: "15px", fontWeight: 500 }}>
+                        {[variant.option1, variant.option2, variant.option3].filter(Boolean).join(" - ")}
+                      </span>
+                    </Col>
+                    <Col md={4}>
+                      <Input
+                        type="number"
+                        value={variant.price}
+                        placeholder="Price"
+                        onChange={(e) => {
+                          const updated = [...variants];
+                          updated[idx].price = e.target.value;
+                          setVariants(updated);
+                        }}
+                      />
+                    </Col>
+                    <Col md={4}>
+                      <Input
+                        type="number"
+                        value={variant.inventory_quantity}
+                        placeholder="Qty"
+                        onChange={(e) => {
+                          const updated = [...variants];
+                          updated[idx].inventory_quantity = Number(e.target.value);
+                          setVariants(updated);
+                        }}
+                      />
+                    </Col>
+                  </Row>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ---------- SUBMIT ---------- */}
+          <Button color="success" type="submit" disabled={formik.isSubmitting} className="mt-3">
+            Create Product
+          </Button>
+        </Form>
+      </FormikProvider>
+    </div>
+  );
+};
+
+export default ProductForm;
