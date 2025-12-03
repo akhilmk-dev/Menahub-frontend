@@ -11,6 +11,7 @@ import { GoPlus } from "react-icons/go";
 const ProductList = () => {
     const dispatch = useDispatch();
     const products = useSelector((state) => state.Product.products); 
+    console.log("products:",products);
     const loading = useSelector((state) => state.Product.loading); 
     const error = useSelector((state) => state.Product.error); 
     const navigate = useNavigate();

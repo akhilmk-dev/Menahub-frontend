@@ -11,8 +11,11 @@ import {
 import axiosInstance from 'pages/Utility/axiosInstance'
 
 const fetchOrdersApi = async ({role,params}) => {
-  if(role?.name?.toLowerCase()=="vendor"){
-    return await axiosInstance.get(`V1/orders/${role?.id}`, { params })
+  console.log("params:",params)
+
+  if(role?.role_name?.toLowerCase()=="vendor"){
+   
+    return await axiosInstance.get(`V1/orders/${userId}`, { params })
   }else{
     return await axiosInstance.get('V1/orders', { params })
   }
@@ -22,6 +25,7 @@ const fetchOrdersApi = async ({role,params}) => {
 function* fetchOrdersSaga(action) {
   try {
     const response = yield call(fetchOrdersApi, action.payload)
+    console.log("response:",response)
     yield put(fetchOrdersSuccess(response.data))
   } catch (error) {
     yield put(fetchOrdersFailure(error.message))

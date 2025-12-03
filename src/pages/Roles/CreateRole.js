@@ -13,6 +13,7 @@ import { showError } from 'helpers/notification_helper';
 import { ClipLoader } from 'react-spinners';
 import { useTranslation } from 'react-i18next';
 import Cookies from 'js-cookie';
+import { getEncryptedLocal } from 'pages/Utility/cookieUtils';
 
 const CreateRole = ({ initialData, onSubmit }) => {
   const dispatch = useDispatch();
@@ -30,9 +31,9 @@ const CreateRole = ({ initialData, onSubmit }) => {
   const fieldErrors = useSelector((state) => state.Role.fieldErrors);
   const permissions = useSelector((state) => state.Permission.permissions);
 
-  const cookiesPermissions = JSON.parse(localStorage.getItem('permissions') || '[]');
+const cookiesPermissions = getEncryptedLocal("permissions") || [];
   const hasAccess = cookiesPermissions.some(p =>
-    ["List Role", "Edit Role", "Add Role"].includes(p?.permission_name)
+    [ "Edit Role", "Add Role"].includes(p?.permission_name)
   );
   useEffect(() => {
     if (!hasAccess) navigate('/page-403');

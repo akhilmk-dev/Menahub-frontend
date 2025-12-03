@@ -10,6 +10,7 @@ import { MdDelete } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import TableContainer from "components/Common/DataTableContainer";
 import Cookies from "js-cookie";
+import { getEncryptedLocal } from "pages/Utility/cookieUtils";
 
 const RoleTable = ({ List,loading }) => {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ const RoleTable = ({ List,loading }) => {
   const [deleteId, setDeleteId] = useState(false);
   const {t} = useTranslation();
   const [confirmAction, setConfirmAction] = useState(false);
-  const permissions2 = JSON.parse(localStorage.getItem('permissions'));
+ const permissions2 = getEncryptedLocal("permissions");
   const hasEditPermission = permissions2?.map(item=>item?.permission_name)?.includes("Edit Role");
   const hasDeletePermission = permissions2?.map(item=>item?.permission_name)?.includes("Delete Role");
 

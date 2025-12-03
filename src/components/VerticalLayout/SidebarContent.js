@@ -19,6 +19,7 @@ import { FaUser } from "react-icons/fa";
 import { CiUser } from "react-icons/ci";
 import { useSelector } from "react-redux";
 import Cookies from "js-cookie";
+import { getEncryptedLocal } from "pages/Utility/cookieUtils";
 
 
 const SidebarContent = ({ t }) => {
@@ -27,7 +28,9 @@ const SidebarContent = ({ t }) => {
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const user = useSelector(state => state?.Login.user)
   const path = location.pathname;
-  const permissions = JSON.parse(localStorage.getItem('permissions'));
+const permissions = getEncryptedLocal("permissions");
+    console.log("permissions:",permissions)
+
 
   const activateParentDropdown = useCallback((item) => {
     item.classList.add("active");
@@ -161,7 +164,8 @@ const SidebarContent = ({ t }) => {
   }
 
   // Get available paths from permissions
-  const availablePaths = permissions?.map(permission => permission.pageUrl);
+  const availablePaths = permissions?.map(permission => permission.page_url);
+  console.log("availablePaths:",availablePaths)
 
   // Handle menu item click
   const handleMenuItemClick = (itemPath) => {
@@ -177,15 +181,17 @@ const SidebarContent = ({ t }) => {
       <SimpleBar style={{ maxHeight: "100%" }} ref={ref}>
         <div id="sidebar-menu">
           <ul className="metismenu list-unstyled" id="side-menu">
-            {(
+            
+             {availablePaths?.includes("/dashboard") && ( 
               <li>
                 <Link to="/dashboard" className="waves-effect" onClick={() => { handleMenuItemClick("/dashboard"); tToggle2(); }}>
                   <IoHomeOutline size={20} className="me-2 mb-1" />
                   <span className="">{t("Dashboard")}</span>
                 </Link>
               </li>
-            )}
-            {(
+              )}
+            
+            {availablePaths?.includes("/orders") && (
               <li>
                 <Link to="/orders" className="waves-effect" onClick={() => { handleMenuItemClick("/orders"); tToggle2(); }}>
                   <FiShoppingCart size={20} className="me-2 mb-1" />
@@ -193,24 +199,32 @@ const SidebarContent = ({ t }) => {
                 </Link>
               </li>
             )}
-            {<li>
+            
+            {availablePaths?.includes("/products") && (
+            <li>
               <Link to="/products" className="waves-effect" onClick={() => { handleMenuItemClick("/products"); tToggle2(); }}>
                 <LiaUserEditSolid size={22} className="me-2" />
                 <span>{t("Products")}</span>
               </Link>
-            </li>}
-            {<li>
+            </li>
+            )}
+
+            {availablePaths?.includes("/users") && (
+              <li>
               <Link to="/users" className="waves-effect" onClick={() => { handleMenuItemClick("/users"); tToggle2(); }}>
                 <CiUser size={22} className="me-2" />
                 <span>{t("Users")}</span>
               </Link>
-            </li>}
-            {<li>
+            </li>
+            )}
+            {availablePaths?.includes("/roles") && (
+              <li>
               <Link to="/roles" className="waves-effect" onClick={() => { handleMenuItemClick("/roles"); tToggle2(); }}>
                 <LiaUserEditSolid size={22} className="me-2" />
                 <span>{t("Roles")}</span>
               </Link>
-            </li>}
+            </li>
+            )}
 
           </ul>
         </div>

@@ -7,6 +7,7 @@ import Breadcrumb from 'components/Common/Breadcrumb2';
 import UserTable from './UserTable';
 import { Navigate, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { getEncryptedLocal } from 'pages/Utility/cookieUtils';
 
 const UserList = () => {
     const [isOpen, setIsOpen] = useState(false); 
@@ -14,11 +15,21 @@ const UserList = () => {
     const users = useSelector((state) => state.User.users);
     const loading = useSelector((state) => state.User.loading);
     const error = useSelector((state) => state.User.error);
-    const permissions = JSON.parse(localStorage.getItem('permissions'));
+    const permissions = getEncryptedLocal("permissions");
+    console.log("permissions:",permissions)
+
+    
     const hasAddPermission = permissions?.some(
         (item) => item?.permission_name === 'User Add'
     );
-    const navigate = useNavigate()
+    const hasListPermission=permissions?.some(
+        (item)=> item?.permission_name ==="User List"
+    )
+     const navigate = useNavigate()
+    if(!hasListPermission && hasAddPermission){
+        navigate('/page-403');
+    }
+   
 
     // useEffect(() => {
     //     dispatch(getRoles());

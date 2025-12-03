@@ -7,6 +7,7 @@ import Breadcrumb from 'components/Common/Breadcrumb2';
 import { useTranslation } from 'react-i18next';
 import RoleTable from './RoleTable';
 import Cookies from 'js-cookie';
+import { getEncryptedLocal } from 'pages/Utility/cookieUtils';
 
 
 const RoleList = () => {
@@ -16,7 +17,7 @@ const RoleList = () => {
     const roles = useSelector((state) => state.Role.roles);
     const loading = useSelector((state) => state.Role.loading);
     const error = useSelector((state) => state.Role.error);
-    const permissions2 = JSON.parse(localStorage.getItem('permissions'));
+   const permissions2 = getEncryptedLocal("permissions");
     const hasListRolePermission = permissions2?.map(item => item?.permission_name)?.includes("List Role");
     const hasEditPermission = permissions2?.map(item=>item?.permission_name)?.includes("Edit Role");
     const hasDeletePermission = permissions2?.map(item=>item?.permission_name)?.includes("Delete Role");

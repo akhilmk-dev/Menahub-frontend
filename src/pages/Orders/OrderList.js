@@ -10,10 +10,13 @@ import { useNavigate } from 'react-router-dom';
 const OrderList = () => {
     const dispatch = useDispatch();
     const orders = useSelector((state) => state.Order.orders); 
+    console.log("orders:",orders)
     const loading = useSelector((state) => state.Order.loading);
     const error = useSelector((state) => state.Order.error);
     const navigate = useNavigate();
-    const role={};
+   const role = useSelector((state) => state.Login.user?.role);
+console.log("ROLE:", role);
+
 
     return (
         <div className="page-content container-fluid mt-4">

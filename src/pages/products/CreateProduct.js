@@ -22,8 +22,20 @@ import { useTranslation } from "react-i18next";
 import { IoMdClose } from "react-icons/io";
 import { showSuccess } from "helpers/notification_helper";
 import { fileToBase64, generateVariants } from "helpers/common_helper";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUsersRequest } from "store/actions";
+import { useUserRole } from "hooks/useUserRole";
+
 
 const ProductForm = ({ onCreated }) => {
+const { role, vendorName, isAdmin, isVendor } = useUserRole();
+
+const dispatch = useDispatch();
+const allUsers = useSelector((state) => state.User.users?.data || []);
+  const vendors = allUsers.filter(
+    (user) => user?.role?.role_name?.toLowerCase() === "vendor"
+  );
+
   const [allImages, setAllImages] = useState([]);  // unified list
   const [variants, setVariants] = useState([]);
   const [collections, setCollections] = useState([]);
@@ -33,6 +45,10 @@ const ProductForm = ({ onCreated }) => {
   const [productDetails, setProductDetails] = useState([])
   const { t } = useTranslation()
   const navigate = useNavigate()
+
+    useEffect(() => {
+    dispatch(fetchUsersRequest());
+  }, []);
 
   const fetchProductDetails = async () => {
     try {
@@ -97,6 +113,13 @@ const ProductForm = ({ onCreated }) => {
     }
   }, [productDetails]);
 
+  useEffect(() => {
+  if (isVendor) {
+    formik.setFieldValue("vendor", vendorName || "");
+  }
+}, [isVendor, vendorName]);
+
+
   const formik = useFormik({
     initialValues: {
       title: "",
@@ -156,6 +179,7 @@ const ProductForm = ({ onCreated }) => {
           setPreviewImages([]);
           setVariants([]);
         } else {
+          console.log("creating product")
           const res = await axios.post(`http://localhost:3002/api/V1/products`, payload);
           onCreated && onCreated(res.data);
           resetForm();
@@ -322,16 +346,34 @@ const ProductForm = ({ onCreated }) => {
           </div>
 
           {/* ---------- ORGANIZATION ---------- */}
-          <div style={cardStyle}>
-            <div style={cardTitle}>Organization</div>
-
+<div style={cardStyle}>
             <Label style={labelStyle}>Vendor</Label>
-            <Input
-              id="vendor"
-              name="vendor"
-              value={formik.values.vendor}
-              onChange={formik.handleChange}
-            />
+
+            {isAdmin ? (
+              <Select
+                options={vendors.map((v) => ({
+                  label: v.name,
+                  value: v.name,
+                }))}
+                value={
+                  vendors
+                    .map((v) => ({ label: v.name, value: v.name }))
+                    .find((opt) => opt.value === formik.values.vendor) || null
+                }
+                onChange={(selected) => {
+                  formik.setFieldValue("vendor", selected.value);
+                }}
+                placeholder="Select Vendor"
+              />
+            ) : (
+              <Input
+                id="vendor"
+                name="vendor"
+                value={vendorName}
+                readOnly
+                disabled
+              />
+            )}
 
             <Label style={labelStyle} className="mt-2">Product Type</Label>
             <Input
@@ -347,23 +389,20 @@ const ProductForm = ({ onCreated }) => {
               name="tags"
               value={formik.values.tags}
               onChange={formik.handleChange}
-              placeholder="summer, cotton, etc"
             />
 
-            {/* ---------- COLLECTION DROPDOWN ---------- */}
             <Label style={labelStyle} className="mt-2">Collections</Label>
 
             <Select
               isMulti
               name="collectionIds"
-              options={collections?.map(item => ({ label: item?.title, value: item?.id }))}
-              className="basic-multi-select"
+              options={collections?.map((item) => ({ label: item?.title, value: item?.id }))}
               classNamePrefix="select"
-              value={collections?.map(item => ({ label: item?.title, value: String(item?.id) }))?.filter(opt =>
-                formik.values.collectionIds.includes(opt.value)
-              )}
+              value={collections
+                ?.map((item) => ({ label: item?.title, value: String(item?.id) }))
+                ?.filter((opt) => formik.values.collectionIds.includes(opt.value))}
               onChange={(selected) => {
-                const ids = selected ? selected.map(item => String(item.value)) : [];
+                const ids = selected ? selected.map((item) => String(item.value)) : [];
                 formik.setFieldValue("collectionIds", ids);
               }}
             />
@@ -500,7 +539,7 @@ const ProductForm = ({ onCreated }) => {
           </div>
 
           {/* ---------- SUBMIT ---------- */}
-          <Button color="success" type="submit" disabled={formik.isSubmitting} className="mt-3">
+          <Button color="primary" type="submit" disabled={formik.isSubmitting} className="mt-3 mb-3">
             Create Product
           </Button>
         </Form>

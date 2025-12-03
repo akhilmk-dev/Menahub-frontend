@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { DebouncedInput } from "helpers/common_helper";
 import Pagination from "components/Common/Pagination";
 import { fetchOrdersRequest } from "store/Orders/actions";
+import { getEncryptedLocal } from "pages/Utility/cookieUtils";
 
 
 // Global Filter (Debounced Input)
@@ -60,7 +61,9 @@ const OrderDataTable = ({
     const [selectedVendor, setSelectedVendor] = useState(null);
     const [selectedFinancialStatus, setSelectedFinancialStatus] = useState(null);
 
-    const permissions = JSON.parse(localStorage.getItem('permissions'));
+const permissions = getEncryptedLocal("permissions");
+    console.log("permissions:",permissions)
+
     const hasVendorFilter = permissions?.some(
         (item) => item?.permission_name === 'Vendor Filter'
     );

@@ -10,6 +10,7 @@ import { FaRegEdit } from "react-icons/fa";
 import UserDataTable from "components/TableContainers/UserDataTable";
 import { useNavigate } from "react-router-dom";
 import { formatISOToDDMMYYYY } from "helpers/dateFormat_helper";
+import { getEncryptedLocal } from "pages/Utility/cookieUtils";
 
 
 const UserTable = ({ users, loading, totalrows }) => {
@@ -24,7 +25,8 @@ const UserTable = ({ users, loading, totalrows }) => {
   const [pageSize, setPageSize] = useState(10);
   const [searchString, setSearchString] = useState("");
   const user = useSelector(state => state?.Login.user)
-  const permissions = JSON.parse(localStorage.getItem("permissions"));
+ const permissions = getEncryptedLocal("permissions");
+  
   const hasEditPermission = permissions?.some(
     (item) => item?.permission_name === "User Edit"
   );
