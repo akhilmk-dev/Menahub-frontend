@@ -28,8 +28,7 @@ const SidebarContent = ({ t }) => {
   const [selectedMenuItem, setSelectedMenuItem] = useState(null);
   const user = useSelector(state => state?.Login.user)
   const path = location.pathname;
-const permissions = getEncryptedLocal("permissions");
-    console.log("permissions:",permissions)
+  const permissions = getEncryptedLocal("permissions");
 
 
   const activateParentDropdown = useCallback((item) => {
@@ -165,7 +164,6 @@ const permissions = getEncryptedLocal("permissions");
 
   // Get available paths from permissions
   const availablePaths = permissions?.map(permission => permission.page_url);
-  console.log("availablePaths:",availablePaths)
 
   // Handle menu item click
   const handleMenuItemClick = (itemPath) => {
@@ -181,16 +179,16 @@ const permissions = getEncryptedLocal("permissions");
       <SimpleBar style={{ maxHeight: "100%" }} ref={ref}>
         <div id="sidebar-menu">
           <ul className="metismenu list-unstyled" id="side-menu">
-            
-             {availablePaths?.includes("/dashboard") && ( 
+
+            {availablePaths?.includes("/dashboard") && (
               <li>
                 <Link to="/dashboard" className="waves-effect" onClick={() => { handleMenuItemClick("/dashboard"); tToggle2(); }}>
                   <IoHomeOutline size={20} className="me-2 mb-1" />
                   <span className="">{t("Dashboard")}</span>
                 </Link>
               </li>
-              )}
-            
+            )}
+
             {availablePaths?.includes("/orders") && (
               <li>
                 <Link to="/orders" className="waves-effect" onClick={() => { handleMenuItemClick("/orders"); tToggle2(); }}>
@@ -199,33 +197,32 @@ const permissions = getEncryptedLocal("permissions");
                 </Link>
               </li>
             )}
-            
+
             {availablePaths?.includes("/products") && (
-            <li>
-              <Link to="/products" className="waves-effect" onClick={() => { handleMenuItemClick("/products"); tToggle2(); }}>
-                <LiaUserEditSolid size={22} className="me-2" />
-                <span>{t("Products")}</span>
-              </Link>
-            </li>
+              <li>
+                <Link to="/products" className="waves-effect" onClick={() => { handleMenuItemClick("/products"); tToggle2(); }}>
+                  <LiaUserEditSolid size={22} className="me-2" />
+                  <span>{t("Products")}</span>
+                </Link>
+              </li>
             )}
 
             {availablePaths?.includes("/users") && (
               <li>
-              <Link to="/users" className="waves-effect" onClick={() => { handleMenuItemClick("/users"); tToggle2(); }}>
-                <CiUser size={22} className="me-2" />
-                <span>{t("Users")}</span>
-              </Link>
-            </li>
+                <Link to="/users" className="waves-effect" onClick={() => { handleMenuItemClick("/users"); tToggle2(); }}>
+                  <CiUser size={22} className="me-2" />
+                  <span>{t("Users")}</span>
+                </Link>
+              </li>
             )}
             {availablePaths?.includes("/roles") && (
               <li>
-              <Link to="/roles" className="waves-effect" onClick={() => { handleMenuItemClick("/roles"); tToggle2(); }}>
-                <LiaUserEditSolid size={22} className="me-2" />
-                <span>{t("Roles")}</span>
-              </Link>
-            </li>
+                <Link to="/roles" className="waves-effect" onClick={() => { handleMenuItemClick("/roles"); tToggle2(); }}>
+                  <LiaUserEditSolid size={22} className="me-2" />
+                  <span>{t("Roles")}</span>
+                </Link>
+              </li>
             )}
-
           </ul>
         </div>
       </SimpleBar>

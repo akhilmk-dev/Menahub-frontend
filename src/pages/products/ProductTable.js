@@ -8,6 +8,7 @@ import ProductDataTable from "components/TableContainers/ProductDataTable";  // 
 import { useNavigate } from "react-router-dom";
 // Replace with actual action creators
 import { deleteProductRequest, updateProductRequest } from "store/actions";
+import EditablePriceQuantityCell from "components/EditablePriceQuantityCell";
 
 const ProductTable = ({ products, loading, totalrows }) => {
   const dispatch = useDispatch();
@@ -26,49 +27,47 @@ const ProductTable = ({ products, loading, totalrows }) => {
       header: "Product Name",
       accessorKey: "title",
       cell: ({ row }) => (
-        <span style={{ cursor: "pointer", fontWeight: "bolder" }} onClick={() => navigate(`/productDetails/${row.original?._id}`)}>
+        <span
+          style={{ cursor: "pointer", fontWeight: "bolder" }}
+          onClick={() => navigate(`/productDetails/${row.original?._id}`)}
+        >
           {row.original.title}
         </span>
       ),
     },
     {
-      header: "Price",
-      accessorKey: "price",
-      cell: ({ row }) => row.original.price || "0.00",
+      header: "Edit Price / Quantity",
+      accessorKey: "edit",
+      cell: ({ row }) => <EditablePriceQuantityCell product={row.original} />,
     },
     {
       header: "Vendor",
-      accessorKey: "vendor_name",
-      cell: ({ row }) => row.original.vendor_name || "N/A",
-    },
-    {
-      header: "Stock",
-      accessorKey: "stock",
-      cell: ({ row }) => row.original.stock || 0,
+      accessorKey: "vendor",
+      cell: ({ row }) => row.original.vendor || "N/A",
     },
     {
       header: "Actions",
       accessorKey: "actions",
-      showFilter: false,
       cell: ({ row }) => (
         <div className="actions">
           <Button
             color="primary"
             style={{ marginRight: "5px" }}
-            onClick={() => navigate(`/CreateProduct?id=${row.original?.shopifyId}`)}
+            onClick={() => navigate(`/CreateProduct?id=${row.original?.legacyResourceId}`)}
           >
             <FaRegEdit size={18} />
           </Button>
           <Button
             color="danger"
-            onClick={() => handleDelete(row.original?.shopifyId)}
+            onClick={() => handleDelete(row.original?.legacyResourceId)}
           >
             <MdDelete size={18} />
           </Button>
         </div>
       ),
     },
-  ], []);
+], []);
+
 
   // Handle delete confirmation
   const handleDelete = (productId) => {

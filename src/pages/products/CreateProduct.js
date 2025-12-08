@@ -16,7 +16,7 @@ import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { BASE_URL } from "constants/config";
 import axiosInstance from "pages/Utility/axiosInstance";
-import { useLocation, useNavigate} from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Select from "react-select"
 import { useTranslation } from "react-i18next";
 import { IoMdClose } from "react-icons/io";
@@ -28,15 +28,13 @@ import { useUserRole } from "hooks/useUserRole";
 
 
 const ProductForm = ({ onCreated }) => {
-const { role, vendorName, isAdmin, isVendor } = useUserRole();
-
-const dispatch = useDispatch();
-const allUsers = useSelector((state) => state.User.users?.data || []);
+  const { role, vendorName, isAdmin, isVendor } = useUserRole();
+  const dispatch = useDispatch();
+  const allUsers = useSelector((state) => state.User.users?.data || []);
   const vendors = allUsers.filter(
     (user) => user?.role?.role_name?.toLowerCase() === "vendor"
   );
-
-  const [allImages, setAllImages] = useState([]);  // unified list
+  const [allImages, setAllImages] = useState([]);  
   const [variants, setVariants] = useState([]);
   const [collections, setCollections] = useState([]);
   const { search } = useLocation();
@@ -46,7 +44,7 @@ const allUsers = useSelector((state) => state.User.users?.data || []);
   const { t } = useTranslation()
   const navigate = useNavigate()
 
-    useEffect(() => {
+  useEffect(() => {
     dispatch(fetchUsersRequest());
   }, []);
 
@@ -114,10 +112,10 @@ const allUsers = useSelector((state) => state.User.users?.data || []);
   }, [productDetails]);
 
   useEffect(() => {
-  if (isVendor) {
-    formik.setFieldValue("vendor", vendorName || "");
-  }
-}, [isVendor, vendorName]);
+    if (isVendor) {
+      formik.setFieldValue("vendor", vendorName || "");
+    }
+  }, [isVendor, vendorName]);
 
 
   const formik = useFormik({
@@ -163,7 +161,7 @@ const allUsers = useSelector((state) => state.User.users?.data || []);
               values: opt.values.filter((v) => v !== ""),
             })),
             variants,
-            images: [...newImagesBase64.map((b64) => ({ attachment: b64 })),...allImages?.filter(item=>!item?.isNew)?.map(item=>({id:item?.id,src:item?.src}))],
+            images: [...newImagesBase64.map((b64) => ({ attachment: b64 })), ...allImages?.filter(item => !item?.isNew)?.map(item => ({ id: item?.id, src: item?.src }))],
           },
           // imagesToKeep: allImages
           //   .filter(img => !img.isNew)
@@ -346,7 +344,7 @@ const allUsers = useSelector((state) => state.User.users?.data || []);
           </div>
 
           {/* ---------- ORGANIZATION ---------- */}
-<div style={cardStyle}>
+          <div style={cardStyle}>
             <Label style={labelStyle}>Vendor</Label>
 
             {isAdmin ? (
@@ -540,7 +538,7 @@ const allUsers = useSelector((state) => state.User.users?.data || []);
 
           {/* ---------- SUBMIT ---------- */}
           <Button color="primary" type="submit" disabled={formik.isSubmitting} className="mt-3 mb-3">
-            Create Product
+            {id ? "Update Product": "Create Product"}
           </Button>
         </Form>
       </FormikProvider>

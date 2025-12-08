@@ -39,7 +39,6 @@ export const removeEncryptedCookie = (key) => {
 
 // Encrypt and store in localStorage
 export const setEncryptedLocal = (key, value) => {
-  console.log("permissions for encripting")
   const encrypted = CryptoJS.AES.encrypt(JSON.stringify(value), REACT_APP_ENCRYPT_SECRET_KEY).toString();
   console.log("encrypted:",encrypted)
   localStorage.setItem(key, encrypted);

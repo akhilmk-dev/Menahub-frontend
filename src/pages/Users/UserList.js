@@ -15,8 +15,7 @@ const UserList = () => {
     const users = useSelector((state) => state.User.users);
     const loading = useSelector((state) => state.User.loading);
     const error = useSelector((state) => state.User.error);
-    const permissions = getEncryptedLocal("permissions");
-    console.log("permissions:",permissions)
+    const permissions = getEncryptedLocal("permissions")
 
     
     const hasAddPermission = permissions?.some(

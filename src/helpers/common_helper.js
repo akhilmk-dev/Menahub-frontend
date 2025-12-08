@@ -238,7 +238,6 @@ export const exportToCsv = (data, columns, docName) => {
 export const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, ...props }) => {
     const [value, setValue] = useState(initialValue);
 
-
     useEffect(() => {
         setValue(initialValue);
     }, [initialValue]);
@@ -252,37 +251,34 @@ export const DebouncedInput = ({ value: initialValue, onChange, debounce = 500, 
     }, [debounce, onChange, value]);
 
     return (
-        <React.Fragment>
-            <Col sm={12}>
-                <div style={{ position: 'relative', display: 'inline-block', width: '100%', minWidth: "200px" }}>
-                    <input
-                        {...props}
-                        value={value}
-                        type="search"
-                        onChange={(e) => setValue(e.target.value)}
-                        style={{
-                            paddingLeft: '30px',
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            height: "38px"
-                        }}
-                    />
-                    <IoIosSearch
-                        style={{
-                            position: 'absolute',
-                            left: '10px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: 'gray',
-                            cursor: 'pointer',
-                        }}
-                        size={16}
-                    />
-                </div>
-            </Col>
-        </React.Fragment>
+        <div style={{ position: 'relative', display: 'inline-block', maxWidth:"300px", minWidth: '200px' }}>
+            <input
+                {...props}
+                value={value}
+                type="search"
+                onChange={(e) => setValue(e.target.value)}
+                style={{
+                    paddingLeft: '30px',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    height: '38px',
+                }}
+            />
+            <IoIosSearch
+                style={{
+                    position: 'absolute',
+                    left: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: 'gray',
+                    cursor: 'pointer',
+                }}
+                size={16}
+            />
+        </div>
     );
 };
+
 
 export function fileToBase64(file) {
     return new Promise((resolve, reject) => {

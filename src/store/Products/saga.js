@@ -17,7 +17,6 @@ import { showSuccess } from 'helpers/notification_helper';
 // Fetch products API call
 const fetchProductsApi = async ({ role, params }) => {
   if (role?.name?.toLowerCase() === "vendor") {
-  
     return await axiosInstance.get(`V1/products/${role?.id}`, { params });
   } else {
     return await axiosInstance.get('V1/products', { params });

@@ -285,14 +285,13 @@ const PublicationDataTable = ({
         { label: "Title(en)(a-z)", value: "title_en", direction: "asc" },
         { label: "Title(en)(z-a)", value: "title_en", direction: "desc" },
     ]
-
     const hasMounted = useRef(false);
     useEffect(() => {
         if (!hasMounted.current) {
             hasMounted.current = true;
             return;
-          }
-        if(!loading && pageIndex != 0){
+        }
+        if (!loading && pageIndex != 0) {
             dispatch(getPublications({
                 "pagesize": pageSize,
                 "currentpage": pageIndex + 1,
@@ -304,13 +303,13 @@ const PublicationDataTable = ({
                     : {},
                 "searchstring": searchString,
                 "filter": {
-                    "type":selectedType?.value,
-                    "classification_id":selectedClassification?.value,
+                    "type": selectedType?.value,
+                    "classification_id": selectedClassification?.value,
                 }
             }))
         }
 
-    }, [ selectedSortData,pageIndex])
+    }, [selectedSortData, pageIndex])
 
     useEffect(() => {
         localStorage.setItem('pageIndex', pageIndex);
@@ -318,12 +317,12 @@ const PublicationDataTable = ({
         localStorage.setItem('selectedSortData', JSON.stringify(selectedSortData))
         localStorage.setItem('selectedFromDate', selectedFromDate);
         localStorage.setItem('selectedClassification', JSON.stringify(selectedClassification));
-        localStorage.setItem('selectedType',JSON.stringify(selectedType));
+        localStorage.setItem('selectedType', JSON.stringify(selectedType));
         if (!hasMounted.current) {
             hasMounted.current = true;
             return;
-          }
-        if(!loading && pageIndex == 0){
+        }
+        if (!loading && pageIndex == 0) {
             dispatch(getPublications({
                 "pagesize": pageSize,
                 "currentpage": pageIndex + 1,
@@ -335,16 +334,16 @@ const PublicationDataTable = ({
                     : {},
                 "searchstring": searchString,
                 "filter": {
-                    "type":selectedType?.value,
-                    "classification_id":selectedClassification?.value,
+                    "type": selectedType?.value,
+                    "classification_id": selectedClassification?.value,
                 }
             }))
         }
-    }, [selectedSortData,selectedClassification,searchString, pageIndex,selectedType]);
+    }, [selectedSortData, selectedClassification, searchString, pageIndex, selectedType]);
 
-    useEffect(()=>{
-            setPageIndex(0)
-    },[selectedClassification,searchString,selectedType]);
+    useEffect(() => {
+        setPageIndex(0)
+    }, [selectedClassification, searchString, selectedType]);
 
     const handlePageChange = (newPageIndex) => {
         setPageIndex(newPageIndex);
@@ -423,9 +422,9 @@ const PublicationDataTable = ({
             </Row>
             <div className="d-flex justify-content-between gap-2 mb-2">
                 <div className="d-flex justify-content-between gap-2 align-items-center">
-                <div className="" style={{minWidth:"200px"}}>
+                    <div className="" style={{ minWidth: "200px" }}>
                         <label className=" fs-8">
-                            Classifications 
+                            Classifications
                         </label>
                         <Select
                             options={classifications}
@@ -437,16 +436,16 @@ const PublicationDataTable = ({
                             }
                             classNamePrefix="select"
                             isClearable={true}
-                            
+
                         />
                     </div>
-                    <div className="" style={{minWidth:"200px"}}>
+                    <div className="" style={{ minWidth: "200px" }}>
                         <label className=" fs-8">
-                            Type 
+                            Type
                         </label>
                         <Select
-                            options={[{label:"Book",value:"book"},{label:"Url",value:"url"}]}
-                            value={[{label:"Book",value:"book"},{label:"Url",value:"url"}]?.find(
+                            options={[{ label: "Book", value: "book" }, { label: "Url", value: "url" }]}
+                            value={[{ label: "Book", value: "book" }, { label: "Url", value: "url" }]?.find(
                                 (option) => option.value === selectedType?.value
                             ) || null}
                             onChange={(selectedOption) =>
@@ -454,14 +453,14 @@ const PublicationDataTable = ({
                             }
                             classNamePrefix="select"
                             isClearable={true}
-                            
+
                         />
                     </div>
                 </div>
                 <div className="d-flex justify-content-between align-items-end">
                     <DebouncedInput
                         value={searchString ?? ""}
-                        onChange={(value) => {setSearchString(String(value))}}
+                        onChange={(value) => { setSearchString(String(value)) }}
                         className="form-control search-box me-2  d-inline-block"
                         placeholder={SearchPlaceholder}
                     />
@@ -529,14 +528,14 @@ const PublicationDataTable = ({
                         {loading ? (
                             <tr>
                                 <td colSpan={columns.length + 1} className="text-center border-none">
-                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '500px'}}>
+                                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '500px' }}>
                                         <FadeLoader color="#f28c28" size={40} />
                                     </div>
                                 </td>
                             </tr>
                         ) : (data?.length <= 0 || getRowModel()?.rows?.length === 0) ? (
                             <tr>
-                                <td colSpan={columns.length+1} className="text-center">
+                                <td colSpan={columns.length + 1} className="text-center">
                                     No Data Found
                                 </td>
                             </tr>
@@ -555,14 +554,17 @@ const PublicationDataTable = ({
             </div>
 
             {(isPagination && totalrows > 0) && (
+                <>
+            
                 <Pagination
                     currentPage={pageIndex + 1}
                     totalPages={totalPages}
                     totalItems={totalrows}
                     pageSize={pageSize}
                     onPageChange={handlePageChange}
-                    showInfo={true}
+                    showInfo={true}     
                 />
+                </>
             )}
 
         </Fragment>

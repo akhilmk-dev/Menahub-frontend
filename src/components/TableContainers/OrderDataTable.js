@@ -62,7 +62,6 @@ const OrderDataTable = ({
     const [selectedFinancialStatus, setSelectedFinancialStatus] = useState(null);
 
 const permissions = getEncryptedLocal("permissions");
-    console.log("permissions:",permissions)
 
     const hasVendorFilter = permissions?.some(
         (item) => item?.permission_name === 'Vendor Filter'
