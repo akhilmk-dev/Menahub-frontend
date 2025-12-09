@@ -1,4 +1,9 @@
+
 import React, { useState, useEffect } from "react";
+import { FaPlus,FaRegTrashAlt,  } from "react-icons/fa";
+import { BsPlusSquareDotted,BsPlusCircle } from "react-icons/bs";
+
+
 import { useFormik, Field, FieldArray, FormikProvider } from "formik";
 import * as Yup from "yup";
 import {
@@ -170,7 +175,7 @@ const ProductForm = ({ onCreated }) => {
         };
 
         if (id) {
-          const res = await axios.put(`http://localhost:3002/api/V1/products/update/${id}`, payload);
+          const res = await axiosInstance.put(`V1/products/update/${id}`, payload);
           resetForm();
           showSuccess("Product updated successfully")
           navigate('/products')
@@ -178,7 +183,7 @@ const ProductForm = ({ onCreated }) => {
           setVariants([]);
         } else {
           console.log("creating product")
-          const res = await axios.post(`http://localhost:3002/api/V1/products`, payload);
+          const res = await axiosInstance.post(`V1/products`, payload);
           onCreated && onCreated(res.data);
           resetForm();
           showSuccess("Product added successfully")
@@ -257,76 +262,91 @@ const ProductForm = ({ onCreated }) => {
       </div>
 
       <FormikProvider value={formik}>
-        <Form onSubmit={formik.handleSubmit} className="mx-3">
+<Form onSubmit={formik.handleSubmit} className="mx-3">
 
-          {/* ---------- TITLE ---------- */}
-          <div style={cardStyle}>
-            <Label style={labelStyle}>Title*</Label>
-            <Input
-              id="title"
-              name="title"
-              value={formik.values.title}
-              onChange={formik.handleChange}
-              invalid={!!formik.errors.title && formik.touched.title}
-            />
-            {formik.errors.title && (
-              <FormText color="danger">{formik.errors.title}</FormText>
-            )}
-          </div>
+  <Row>
+    {/* ================= LEFT COLUMN ================= */}
+    <Col md={8}>
 
-          {/* ---------- DESCRIPTION ---------- */}
-          <div style={cardStyle}>
-            <Label style={labelStyle}>Description</Label>
-            <ReactQuill
-              theme="snow"
-              value={formik.values.body_html}
-              onChange={(value) => formik.setFieldValue("body_html", value)}
-              placeholder="Write product description…"
-              style={{ background: "white", borderRadius: "8px" }}
-            />
-          </div>
+      {/* ---------- COMBINED BOX: TITLE + DESCRIPTION + MEDIA ---------- */}
+      <div style={cardStyle}>
+        {/* Title */}
+        <Label style={labelStyle}>Title*</Label>
+        <Input
+          id="title"
+          name="title"
+          value={formik.values.title}
+          onChange={formik.handleChange}
+          invalid={!!formik.errors.title && formik.touched.title}
+        />
+        {formik.errors.title && (
+          <FormText color="danger">{formik.errors.title}</FormText>
+        )}
 
-          {/* ---------- MEDIA ---------- */}
-          <div style={cardStyle}>
-            <Label style={labelStyle}>Media</Label>
-            <Input type="file" multiple accept="image/*" onChange={handleImageChange} />
+        {/* Description */}
+        <Label className="mt-3" style={labelStyle}>Description</Label>
+<ReactQuill
+  theme="snow"
+  value={formik.values.body_html}
+  onChange={(value) => formik.setFieldValue("body_html", value)}
+  placeholder="Write product description…"
+  style={{
+    background: "white",
+    borderRadius: "8px"
+  }}
+/>
 
-            <div className="d-flex gap-2 mt-2 flex-wrap">
-              {allImages.map((img, i) => (
-                <div key={i} style={{ position: "relative" }}>
-                  <img
-                    src={img.src}
-                    alt=""
-                    style={{
-                      width: 100,
-                      height: 100,
-                      objectFit: "cover",
-                      borderRadius: 6,
-                      border: "1px solid #e5e5e5",
-                    }}
-                  />
+<style>
+  {`
+    .ql-editor {
+      min-height: 200px;
+    }
+  `}
+</style>
 
-                  <Button
-                    color="danger"
-                    size="sm"
-                    onClick={() => handleImageRemove(i)}
-                    style={{
-                      position: "absolute",
-                      top: 4,
-                      right: 4,
-                      padding: "2px 5px",
-                      borderRadius: "50%",
-                    }}
-                  >
-                    <IoMdClose size={12} color="white" />
-                  </Button>
-                </div>
-              ))}
+
+        {/* Media */}
+        <Label className="mt-3" style={labelStyle}>Media</Label>
+        <Input
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={handleImageChange}
+        />
+        <div className="d-flex gap-2 mt-2 flex-wrap">
+          {allImages.map((img, i) => (
+            <div key={i} style={{ position: "relative" }}>
+              <img
+                src={img.src}
+                alt=""
+                style={{
+                  width: 100,
+                  height: 100,
+                  objectFit: "cover",
+                  borderRadius: 6,
+                  border: "1px solid #e5e5e5",
+                }}
+              />
+              <Button
+                color="danger"
+                size="sm"
+                onClick={() => handleImageRemove(i)}
+                style={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  padding: "2px 5px",
+                  borderRadius: "50%",
+                }}
+              >
+                <IoMdClose size={12} color="white" />
+              </Button>
             </div>
+          ))}
+        </div>
+      </div>
 
-          </div>
-
-          {/* ---------- PRICING ---------- */}
+                {/* ---------- PRICING ---------- */}
           <div style={cardStyle}>
             <div style={cardTitle}>Pricing</div>
             <Label style={labelStyle}>Price*</Label>
@@ -343,158 +363,134 @@ const ProductForm = ({ onCreated }) => {
             )}
           </div>
 
-          {/* ---------- ORGANIZATION ---------- */}
-          <div style={cardStyle}>
-            <Label style={labelStyle}>Vendor</Label>
+      {/* ---------- OPTIONS SECTION ---------- */}
+<div style={cardStyle}>
+  <div style={cardTitle}>Options</div>
 
-            {isAdmin ? (
-              <Select
-                options={vendors.map((v) => ({
-                  label: v.name,
-                  value: v.name,
-                }))}
-                value={
-                  vendors
-                    .map((v) => ({ label: v.name, value: v.name }))
-                    .find((opt) => opt.value === formik.values.vendor) || null
-                }
-                onChange={(selected) => {
-                  formik.setFieldValue("vendor", selected.value);
-                }}
-                placeholder="Select Vendor"
-              />
-            ) : (
-              <Input
-                id="vendor"
-                name="vendor"
-                value={vendorName}
-                readOnly
-                disabled
-              />
-            )}
+  <FieldArray name="options">
+    {({ push, remove }) => (
+      <div className="d-flex flex-column gap-3">
 
-            <Label style={labelStyle} className="mt-2">Product Type</Label>
-            <Input
-              id="product_type"
-              name="product_type"
-              value={formik.values.product_type}
-              onChange={formik.handleChange}
-            />
+        {formik.values.options?.map((option, idx) => (
+          <div
+            key={idx}
+            style={{
+              border: "1px solid #dfe3e8",
+              padding: "16px",
+              borderRadius: "10px",
+              background: "#fafbfc",
+            }}
+          >
+            <Row className="align-items-center mb-3">
+              <Col md={10}>
+                <Label style={labelStyle}>Option Name</Label>
+                <Field
+                  name={`options.${idx}.name`}
+                  as={Input}
+                  placeholder="Option Name"
+                />
+              </Col>
 
-            <Label style={labelStyle} className="mt-2">Tags</Label>
-            <Input
-              id="tags"
-              name="tags"
-              value={formik.values.tags}
-              onChange={formik.handleChange}
-            />
+              {/* 🗑 TRASH ICON FOR REMOVE OPTION */}
+              <Col md={2} className="text-end">
+   <span
+  onClick={() => remove(idx)}
+  style={{ cursor: "pointer" }}
+>
+  <FaRegTrashAlt size={16} color="red" />
+</span>
 
-            <Label style={labelStyle} className="mt-2">Collections</Label>
+              </Col>
+            </Row>
 
-            <Select
-              isMulti
-              name="collectionIds"
-              options={collections?.map((item) => ({ label: item?.title, value: item?.id }))}
-              classNamePrefix="select"
-              value={collections
-                ?.map((item) => ({ label: item?.title, value: String(item?.id) }))
-                ?.filter((opt) => formik.values.collectionIds.includes(opt.value))}
-              onChange={(selected) => {
-                const ids = selected ? selected.map((item) => String(item.value)) : [];
-                formik.setFieldValue("collectionIds", ids);
-              }}
-            />
-          </div>
+            <Label style={labelStyle}>Values</Label>
 
-          {/* ---------- OPTIONS ---------- */}
-          <div style={cardStyle}>
-            <div style={cardTitle}>Options</div>
-            <FieldArray name="options">
-              {({ push, remove }) => (
-                <div className="d-flex flex-column gap-3">
-                  {formik.values.options?.map((option, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        border: "1px solid #dfe3e8",
-                        padding: "16px",
-                        borderRadius: "10px",
-                        background: "#fafbfc",
-                      }}
-                    >
-                      <Row className="align-items-center mb-3">
-                        <Col md={6}>
-                          <Label style={labelStyle}>Option Name</Label>
-                          <Field
-                            name={`options.${idx}.name`}
-                            as={Input}
-                            placeholder="Option Name"
-                          />
-                        </Col>
-                        <Col md={6} className="text-end">
-                          <Button
-                            color="danger"
-                            size="sm"
-                            type="button"
-                            onClick={() => remove(idx)}
-                          >
-                            Remove Option
-                          </Button>
-                        </Col>
-                      </Row>
+            <div className="d-flex flex-column gap-2">
 
-                      <Label style={labelStyle}>Values</Label>
-                      <div className="d-flex flex-column gap-2">
-                        {option.values?.map((value, vIdx) => (
-                          <div key={vIdx} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                            <Field
-                              name={`options.${idx}.values.${vIdx}`}
-                              as={Input}
-                              placeholder="Value"
-                            />
-                            <Button
-                              color="danger"
-                              size="sm"
-                              type="button"
-                              onClick={() => {
-                                const updated = [...option.values];
-                                updated.splice(vIdx, 1);
-                                formik.setFieldValue(`options.${idx}.values`, updated);
-                              }}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        ))}
-                        <Button
-                          color="secondary"
-                          size="sm"
-                          type="button"
-                          onClick={() =>
-                            formik.setFieldValue(`options.${idx}.values`, [...option.values, ""])
-                          }
-                        >
-                          + Add Value
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                  <Button
-                    color="primary"
-                    type="button"
-                    onClick={() => push({ name: `Option ${formik.values.options?.length + 1}`, values: [""] })}
-                  >
-                    + Add Option
-                  </Button>
+              {option.values?.map((value, vIdx) => (
+                <div
+                  key={vIdx}
+                  style={{
+                    display: "flex",
+                    gap: "10px",
+                    alignItems: "center",
+                  }}
+                >
+                  <Field
+                    name={`options.${idx}.values.${vIdx}`}
+                    as={Input}
+                    placeholder="Value"
+                  />
+
+                  {/* 🗑 TRASH ICON FOR REMOVE VALUE */}
+<span
+  onClick={() => {
+    const updated = [...option.values];
+    updated.splice(vIdx, 1);
+    formik.setFieldValue(`options.${idx}.values`, updated);
+  }}
+  style={{ cursor: "pointer" }}
+>
+  <FaRegTrashAlt size={16} color="red" />
+</span>
+
+
+                  {/* ➕ ADD VALUE ICON — ONLY ON LAST VALUE */}
+{vIdx === option.values.length - 1 && (
+  <span
+    onClick={() =>
+      formik.setFieldValue(
+        `options.${idx}.values`,
+        [...option.values, ""]
+      )
+    }
+    style={{ cursor: "pointer", marginLeft: "4px" }}
+  >
+    <BsPlusSquareDotted size={18} color="" /> 
+  </span>
+)}
+
                 </div>
-              )}
-            </FieldArray>
+              ))}
 
-            {/* ---------- VARIANTS ---------- */}
-            {variants?.length > 0 && variants?.some(v => v.option1 || v.option2 || v.option3) && (
-              <div className="mt-4">
-                <div style={cardTitle}>Variants</div>
-                <Row className="fw-bold mb-2" style={{ padding: "10px 0", borderBottom: "1px solid #dfe3e8" }}>
+            </div>
+          </div>
+        ))}
+
+        {/* ➕ ADD OPTION BUTTON */}
+<span
+  onClick={() =>
+    push({
+      name: `Option ${formik.values.options?.length + 1}`,
+      values: [""],
+    })
+  }
+  style={{
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    color: "black", // primary blue
+    fontWeight: 500,
+    marginTop: "8px"
+  }}
+>
+  <BsPlusCircle size={18} />
+  Add another option
+</span>
+
+      </div>
+    )}
+  </FieldArray>
+</div>
+
+
+
+      {/* ---------- VARIANTS SECTION ---------- */}
+      {variants?.length > 0 && variants?.some(v => v.option1 || v.option2 || v.option3) && (
+        <div style={cardStyle}>
+          <div style={cardTitle}>Variants</div>
+ <Row className="fw-bold mb-2" style={{ padding: "10px 0", borderBottom: "1px solid #dfe3e8" }}>
                   <Col md={4}>Variant</Col>
                   <Col md={4}>Price</Col>
                   <Col md={4}>inventory_quantity</Col>
@@ -531,16 +527,130 @@ const ProductForm = ({ onCreated }) => {
                       />
                     </Col>
                   </Row>
-                ))}
-              </div>
-            )}
-          </div>
+                                  ))}
 
-          {/* ---------- SUBMIT ---------- */}
-          <Button color="primary" type="submit" disabled={formik.isSubmitting} className="mt-3 mb-3">
-            {id ? "Update Product": "Create Product"}
-          </Button>
-        </Form>
+        </div>
+      )}
+
+    </Col>
+
+    {/* ================= RIGHT COLUMN ================= */}
+    <Col md={4}>
+      <div style={cardStyle}>
+        <div style={cardTitle}>Product Organization</div>
+
+        {/* Vendor */}
+        <Label style={labelStyle}>Vendor</Label>
+        {isAdmin ? (
+          <Select
+            options={vendors.map((v) => ({ label: v.name, value: v.name }))}
+            value={
+              vendors
+                .map((v) => ({ label: v.name, value: v.name }))
+                .find((opt) => opt.value === formik.values.vendor) || null
+            }
+            onChange={(selected) => {
+              formik.setFieldValue("vendor", selected.value);
+            }}
+            placeholder="Select Vendor"
+          />
+        ) : (
+          <Input id="vendor" name="vendor" value={vendorName} readOnly disabled />
+        )}
+
+        {/* Product Type */}
+        <Label className="mt-3" style={labelStyle}>Product Type</Label>
+        <Input
+          id="product_type"
+          name="product_type"
+          value={formik.values.product_type}
+          onChange={formik.handleChange}
+        />
+
+
+
+        {/* Collections */}
+        <Label className="mt-3" style={labelStyle}>Collections</Label>
+<Select
+  isMulti
+  name="collectionIds"
+  closeMenuOnSelect={true}
+  hideSelectedOptions={false}
+  components={{
+    MultiValue: () => null   
+  }}
+  options={collections?.map((item) => ({
+    label: item?.title,
+    value: String(item?.id),
+  }))}
+  onChange={(selected) => {
+    const ids = selected ? selected.map((item) => String(item.value)) : [];
+    formik.setFieldValue("collectionIds", ids);
+  }}
+/>
+<div className="d-flex flex-wrap gap-2 mt-2">
+  {formik.values.collectionIds.map((id) => {
+    const item = collections.find((col) => String(col.id) === id);
+
+    return (
+      <div
+        key={id}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          background: "#e9ecef",
+          padding: "4px 10px",
+          borderRadius: "20px",
+          fontSize: "14px",
+        }}
+      >
+        {item?.title}
+
+        <span
+          onClick={() =>
+            formik.setFieldValue(
+              "collectionIds",
+              formik.values.collectionIds.filter((c) => c !== id)
+            )
+          }
+          style={{
+            marginLeft: "8px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          ×
+        </span>
+      </div>
+    );
+  })}
+</div>
+
+
+                {/* Tags */}
+        <Label className="mt-3" style={labelStyle}>Tags</Label>
+        <Input
+          id="tags"
+          name="tags"
+          value={formik.values.tags}
+          onChange={formik.handleChange}
+        />
+      </div>
+    </Col>
+  </Row>
+
+  <Button
+    color="primary"
+    type="submit"
+    disabled={formik.isSubmitting}
+    className="mt-3 mb-3"
+  >
+    {id ? "Update Product" : "Create Product"}
+    
+  </Button>
+
+</Form>
+
       </FormikProvider>
     </div>
   );

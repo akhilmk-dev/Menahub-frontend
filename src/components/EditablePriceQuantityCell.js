@@ -19,6 +19,7 @@ const EditablePriceQuantityCell = ({ product }) => {
       ? variantOptions[0]
       : { value: product.legacyResourceId, price: product.price, qty: product.inventoryQuantity }
   );
+
   const [price, setPrice] = useState(selectedVariant?.price || product.price);
   const [qty, setQty] = useState(selectedVariant?.qty || product.inventoryQuantity);
   const [saving, setSaving] = useState(false);
@@ -28,12 +29,21 @@ const EditablePriceQuantityCell = ({ product }) => {
       setSaving(true);
 
       if (hasVariants) {
-        await axiosInstance.put(`V1/products/${product.legacyResourceId}/variant/${Number(selectedVariant.value?.replace(/^gid:\/\/shopify\/ProductVariant\//, ""))}/price`, {
-          price: Number(price),
-        });
-        await axiosInstance.put(`V1/products/${product.legacyResourceId}/variant/${Number(selectedVariant.value?.replace(/^gid:\/\/shopify\/ProductVariant\//, ""))}/quantity`, {
-          quantity: Number(qty),
-        });
+        await axiosInstance.put(
+          `V1/products/${product.legacyResourceId}/variant/${Number(selectedVariant.value?.replace(
+            /^gid:\/\/shopify\/ProductVariant\//,
+            ""
+          ))}/price`,
+          { price: Number(price) }
+        );
+
+        await axiosInstance.put(
+          `V1/products/${product.legacyResourceId}/variant/${Number(selectedVariant.value?.replace(
+            /^gid:\/\/shopify\/ProductVariant\//,
+            ""
+          ))}/quantity`,
+          { quantity: Number(qty) }
+        );
       } else {
         await axiosInstance.put(`V1/products/${product.legacyResourceId}/price`, {
           price: Number(price),
@@ -53,40 +63,48 @@ const EditablePriceQuantityCell = ({ product }) => {
   };
 
   return (
-    <div style={{ minWidth: "250px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: "550px" }}>
+      
       {hasVariants && (
-        <Select
-          options={variantOptions}
-          value={selectedVariant}
-          onChange={(val) => {
-            setSelectedVariant(val);
-            setPrice(val.price);
-            setQty(val.qty);
-          }}
-        />
+        <div style={{ minWidth: "150px" }}>
+          <Select
+            options={variantOptions}
+            value={selectedVariant}
+            onChange={(val) => {
+              setSelectedVariant(val);
+              setPrice(val.price);
+              setQty(val.qty);
+            }}
+          />
+        </div>
       )}
 
-      <div className="mt-2 d-flex flex-column gap-1">
-        <input
-          type="number"
-          className="form-control"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Price"
-        />
+      <input
+        type="number"
+        className="form-control"
+        style={{ width: "100px" }}
+        value={price}
+        onChange={(e) => setPrice(e.target.value)}
+        placeholder="Price"
+      />
 
-        <input
-          type="number"
-          className="form-control"
-          value={qty}
-          onChange={(e) => setQty(e.target.value)}
-          placeholder="Quantity"
-        />
+      <input
+        type="number"
+        className="form-control"
+        style={{ width: "100px" }}
+        value={qty}
+        onChange={(e) => setQty(e.target.value)}
+        placeholder="Qty"
+      />
 
-        <Button color="primary" className="mt-1" disabled={saving} onClick={handleSave}>
-          {saving ? "Saving..." : "Save"}
-        </Button>
-      </div>
+      <Button
+        color="primary"
+        disabled={saving}
+        onClick={handleSave}
+        style={{ whiteSpace: "nowrap" }}
+      >
+        {saving ? "Saving..." : "Save"}
+      </Button>
     </div>
   );
 };
