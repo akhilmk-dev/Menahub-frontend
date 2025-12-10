@@ -37,6 +37,51 @@ const tdStyle = {
   overflow: "hidden",
 };
 
+const statusStyles = {
+  paid: {
+    background: "#d4edda",
+    color: "#155724",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    display: "inline-block",
+    fontWeight: "600",
+    fontSize: "12px",
+    textTransform: "capitalize",
+  },
+  unpaid: {
+    background: "#f8d7da",
+    color: "#721c24",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    display: "inline-block",
+    fontWeight: "600",
+    fontSize: "12px",
+    textTransform: "capitalize",
+  },
+  pending: {
+    background: "#fff3cd",
+    color: "#856404",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    display: "inline-block",
+    fontWeight: "600",
+    fontSize: "12px",
+    textTransform: "capitalize",
+  },
+  refunded: {
+    background: "#d1ecf1",
+    color: "#0c5460",
+    padding: "4px 10px",
+    borderRadius: "6px",
+    display: "inline-block",
+    fontWeight: "600",
+    fontSize: "12px",
+    textTransform: "capitalize",
+  },
+};
+
+
+
 const DashboardTable = ({ title, columns, data }) => {
   return (
     <div style={tableContainer}>
@@ -65,19 +110,38 @@ const DashboardTable = ({ title, columns, data }) => {
             ) : (
               data.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {columns.map((col, colIndex) => (
-                    <td
-                      key={colIndex}
-                      style={{
-                        ...tdStyle,
-                        maxWidth: col.field === "title" ? "150px" : "auto", // truncate title
-                        cursor: col.field === "title" ? "pointer" : "default",
-                      }}
-                      title={col.field === "title" ? row[col.field] : undefined} // tooltip
-                    >
-                      {row[col.field]}
-                    </td>
-                  ))}
+                  {columns.map((col, colIndex) => {
+                    const value = row[col.field];
+
+                    // 🎨 Payment Status with color badges
+                    if (col.field === "paymentStatus") {
+                      const key = value?.toLowerCase(); // normalize
+
+                      return (
+                        <td key={colIndex} style={tdStyle}>
+                          <span style={statusStyles[key] || {}}>
+                            {value}
+                          </span>
+                        </td>
+                      );
+                    }
+
+                    return (
+                      <td
+                        key={colIndex}
+                        style={{
+                          ...tdStyle,
+                          maxWidth:
+                            col.field === "title" ? "150px" : "auto",
+                        }}
+                        title={
+                          col.field === "title" ? row[col.field] : undefined
+                        }
+                      >
+                        {value}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             )}

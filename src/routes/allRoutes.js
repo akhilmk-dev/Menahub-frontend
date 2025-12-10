@@ -40,6 +40,7 @@ import OrderList from "pages/Orders/OrderList";
 import OrderDetailsPage from "pages/Orders/OrderDetails";
 import ProductForm from "pages/products/CreateProduct";
 import ProductList from "pages/products/ProductList";
+import Customers from "pages/Customers";
 
 
 const userRoutes = [
@@ -65,7 +66,8 @@ const userRoutes = [
    {path:"/createRole",component:<CreateRole />},
    {path:"/profile",component:<UserProfile />},
    {path:"/CreateProduct",component:<ProductForm />},
-   {path:"/products",component:<ProductList />}
+   {path:"/products",component:<ProductList />},
+   {path:"/customers",component:<Customers/>}
   //  {path:"/changePassword", component:<ChangePassword />},
 ];
 

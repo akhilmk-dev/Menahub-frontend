@@ -28,8 +28,15 @@ const ProductTable = ({ products, loading, totalrows }) => {
       accessorKey: "title",
       cell: ({ row }) => (
         <span
-          style={{ cursor: "pointer", fontWeight: "bolder" }}
-          onClick={() => navigate(`/productDetails/${row.original?._id}`)}
+        title={row.original.title} 
+               style={{
+        fontWeight: "bolder",
+        display: "inline-block",
+        maxWidth: "180px",         // Set max width
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",  // Truncate text
+      }}
         >
           {row.original.title}
         </span>

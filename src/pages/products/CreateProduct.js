@@ -478,8 +478,21 @@ const ProductForm = ({ onCreated }) => {
   <BsPlusCircle size={18} />
   Add another option
 </span>
+  <div style={{ marginTop: "16px", textAlign: "left" }}>
+  <Button
+    color="primary"
+    type="submit"
+    disabled={formik.isSubmitting}
+    style={{ width: "auto", minWidth: "100px" }}
+  >
+    {id ? "Update Product" : "Create Product"}
+  </Button>
+</div>
+
 
       </div>
+
+       
     )}
   </FieldArray>
 </div>
@@ -635,11 +648,14 @@ const ProductForm = ({ onCreated }) => {
           value={formik.values.tags}
           onChange={formik.handleChange}
         />
+
+
+
       </div>
     </Col>
   </Row>
 
-  <Button
+  {/* <Button
     color="primary"
     type="submit"
     disabled={formik.isSubmitting}
@@ -647,7 +663,7 @@ const ProductForm = ({ onCreated }) => {
   >
     {id ? "Update Product" : "Create Product"}
     
-  </Button>
+  </Button> */}
 
 </Form>
 
